@@ -18781,7 +18781,7 @@ section {
   border: solid 1px #f1efef;
   background-color: #ffffff;
   padding: 47px;
-  text-align: center;
+  text-align: left;
   margin-top: 40px;
   -webkit-transition: all 1s;
   -moz-transition: all 1s;
@@ -18829,6 +18829,9 @@ section {
 }
 
 .pricing-box:hover .pricing-list li {
+  color: #ffffff;
+}
+.pricing-box:hover .table {
   color: #ffffff;
 }
 

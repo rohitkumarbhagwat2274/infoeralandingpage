@@ -2,17 +2,18 @@
 <%@ page import="com.mongodb.MongoClient" %>
 <%@ page import="com.mongodb.client.MongoCollection" %>
 <%@ page import="com.mongodb.client.MongoDatabase" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.List" %>
+<%@ page import="com.mongodb.MongoClientURI" %>
+<%@ page import="com.mongodb.client.MongoClients" %>
+<%@ page import="java.io.PrintWriter" %>
+<%@ page import="javax.servlet.http.HttpServletRequest"%>
+<%@ page import="javax.servlet.http.HttpServletResponse"%>
 
 <%
     // MongoDB connection details
-    String host = "localhost";
-    int port = 27017;
     String databaseName = "infoeradb"; // Change this to your database name
     String collectionName = "lead"; // Change this to your collection name
 
-    // Data to be inserted 
+    // Retrieve form data
     String name = request.getParameter("name");
     String email = request.getParameter("email");
     String phno = request.getParameter("phno");
@@ -21,15 +22,18 @@
 
     // Create a MongoClient to connect to the MongoDB server
     MongoClient mongoClient = null;
+    PrintWriter out = response.getWriter();
     try {
-        mongoClient = new MongoClient(host, port);
+        // Connect to MongoDB Atlas cluster
+        String uri = "mongodb+srv://rohit:LXtZaBhpH3hJvDB3@cluster0/infoeradb?retryWrites=true&w=majority";
+        MongoClientURI clientURI = new MongoClientURI(uri);
+        mongoClient = MongoClients.create(clientURI);
 
         // Access the database
-        mongodb+srv://rohit:<LXtZaBhpH3hJvDB3 >@cluster0.vcigych.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-        //MongoDatabase database = mongoClient.getDatabase(infoeradb);
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         // Access the collection
-       // MongoCollection<Document> collection = database.getCollection(lead);
+        MongoCollection<Document> collection = database.getCollection(collectionName);
 
         // Create a document to insert into the collection
         Document document = new Document();
@@ -42,8 +46,9 @@
         // Insert the document into the collection
         collection.insertOne(document);
 
-        // Redirect back to the page with a success message
-        response.sendRedirect("index.html?success=true");
+        // Print success message
+        out.println("Data saved successfully.");
+
     } catch (Exception e) {
         // Handle exceptions
         out.println("Error: " + e.getMessage());
