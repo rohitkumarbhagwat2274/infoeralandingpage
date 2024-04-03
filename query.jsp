@@ -1,61 +1,58 @@
-<%@ page import="org.bson.Document" %>
-<%@ page import="com.mongodb.MongoClient" %>
-<%@ page import="com.mongodb.client.MongoCollection" %>
-<%@ page import="com.mongodb.client.MongoDatabase" %>
-<%@ page import="com.mongodb.MongoClientURI" %>
-<%@ page import="com.mongodb.client.MongoClients" %>
-<%@ page import="java.io.PrintWriter" %>
-<%@ page import="javax.servlet.http.HttpServletRequest"%>
-<%@ page import="javax.servlet.http.HttpServletResponse"%>
+<%@ page import="java.util.Properties" %>
+<%@ page import="javax.mail.*" %>
+<%@ page import="javax.mail.internet.*" %>
+<%@ page import="java.io.*" %>
 
 <%
-    // MongoDB connection details
-    String databaseName = "infoeradb"; // Change this to your database name
-    String collectionName = "lead"; // Change this to your collection name
+    // Email configuration
+    String host = "smtp.gmail.com";
+    String port = "587";
+    String username = "rohit.infoera@gmail.com";
+    String password = "bcdb jbmt cmfx nvkq";
+    String toEmail = "rohit.infoera@gmail.com"; // Change this to your email address
 
-    // Retrieve form data
+    // Form data
     String name = request.getParameter("name");
     String email = request.getParameter("email");
     String phno = request.getParameter("phno");
     String city = request.getParameter("city");
     String message = request.getParameter("message");
 
-    // Create a MongoClient to connect to the MongoDB server
-    MongoClient mongoClient = null;
-    PrintWriter out = response.getWriter();
-    try {
-        // Connect to MongoDB Atlas cluster
-        String uri = "mongodb+srv://rohit:LXtZaBhpH3hJvDB3@cluster0/infoeradb?retryWrites=true&w=majority";
-        MongoClientURI clientURI = new MongoClientURI(uri);
-        mongoClient = MongoClients.create(clientURI);
+    // Email subject
+    String subject = "New Form Submission";
 
-        // Access the database
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
+    // Email body
+    String body = "Name: " + name + "\n" +
+                  "Email: " + email + "\n" +
+                  "Phone Number: " + phno + "\n" +
+                  "City: " + city + "\n" +
+                  "Message: " + message;
 
-        // Access the collection
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+    // Send email
+    Properties props = new Properties();
+    props.put("mail.smtp.host", host);
+    props.put("mail.smtp.port", port);
+    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "true");
 
-        // Create a document to insert into the collection
-        Document document = new Document();
-        document.put("name", name);
-        document.put("email", email);
-        document.put("phno", phno);
-        document.put("city", city);
-        document.put("message", message);
-
-        // Insert the document into the collection
-        collection.insertOne(document);
-
-        // Print success message
-        out.println("Data saved successfully.");
-
-    } catch (Exception e) {
-        // Handle exceptions
-        out.println("Error: " + e.getMessage());
-    } finally {
-        // Close the MongoClient
-        if (mongoClient != null) {
-            mongoClient.close();
+    Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(username, password);
         }
+    });
+
+    try {
+        Message msg = new MimeMessage(session);
+        msg.setFrom(new InternetAddress(username));
+        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        msg.setSubject(subject);
+        msg.setText(body);
+
+        Transport.send(msg);
+
+        // Redirect back to the page with a success message
+        response.sendRedirect("index.html?success=true");
+    } catch (MessagingException e) {
+        out.println("Error: " + e.getMessage());
     }
 %>
